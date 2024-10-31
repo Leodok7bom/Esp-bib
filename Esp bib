@@ -1,0 +1,62 @@
+-- Script básico de ESP para contorno de cabeças (Outline)
+-- Importante: Usar esse tipo de script em jogos online pode violar termos de serviço
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Função para criar um contorno ao redor da cabeça
+local function createOutline(player)
+    if player == Players.LocalPlayer then return end -- Evitar o Local Player
+
+    local character = player.Character
+    if character and character:FindFirstChild("Head") then
+        local head = character.Head
+
+        -- Criação do contorno (BillboardGui)
+        local outlineGui = Instance.new("BillboardGui")
+        outlineGui.Name = "HeadOutline"
+        outlineGui.Adornee = head
+        outlineGui.Size = UDim2.new(1.5, 0, 1.5, 0)
+        outlineGui.AlwaysOnTop = true
+        outlineGui.Parent = head
+
+        -- Contorno (Frame) e personalização
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.BackgroundColor3 = Color3.new(0, 0, 0) -- Cor do contorno (preto)
+        frame.BorderSizePixel = 0
+        frame.BackgroundTransparency = 0.5 -- Transparência
+        frame.Parent = outlineGui
+    end
+end
+
+-- Remover contornos antigos ao sair
+local function removeOutline(player)
+    local character = player.Character
+    if character and character:FindFirstChild("Head") then
+        local head = character.Head
+        local outlineGui = head:FindFirstChild("HeadOutline")
+        if outlineGui then
+            outlineGui:Destroy()
+        end
+    end
+end
+
+-- Atualizar ESP ao entrar/renascer jogadores
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        createOutline(player)
+    end)
+end)
+
+-- Remover contorno ao sair do servidor
+Players.PlayerRemoving:Connect(removeOutline)
+
+-- Atualizar contornos periodicamente
+RunService.RenderStepped:Connect(function()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then
+            createOutline(player)
+        end
+    end
+end)
